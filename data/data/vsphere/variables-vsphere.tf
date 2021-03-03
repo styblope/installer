@@ -57,6 +57,11 @@ variable "vsphere_preexisting_folder" {
   description = "If false, creates a top-level folder with the name from vsphere_folder_rel_path."
 }
 
+variable "vsphere_resource_pool" {
+  type        = string
+  description = "This is the name of the resource pool located in the vSphere cluster"
+}
+
 ///////////
 // Control Plane machine variables
 ///////////

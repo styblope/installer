@@ -24,6 +24,9 @@ type Platform struct {
 	// Cluster is the name of the cluster virtual machines will be cloned into.
 	Cluster string `json:"cluster,omitempty"`
 
+	// ResourcePool is the name of the resource pool located in the vSphere cluster
+	ResourcePool string `json:"resourcePool"`
+
 	// ClusterOSImage overrides the url provided in rhcos.json to download the RHCOS OVA
 	ClusterOSImage string `json:"clusterOSImage,omitempty"`
 

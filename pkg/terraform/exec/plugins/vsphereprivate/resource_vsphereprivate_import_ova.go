@@ -84,6 +84,13 @@ func resourceVSpherePrivateImportOva() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
+			"resource_pool": {
+				Type:         schema.TypeString,
+				Description:  "The name of the resource pool to locate the virtual machine in.",
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.NoZeroValues,
+			},
 		},
 	}
 }
@@ -98,7 +105,7 @@ type importOvaParams struct {
 	Folder       *object.Folder
 }
 
-func findImportOvaParams(client *vim25.Client, datacenter, cluster, datastore, network, folder string) (*importOvaParams, error) {
+func findImportOvaParams(client *vim25.Client, datacenter, cluster, datastore, network, folder, pool string) (*importOvaParams, error) {
 	var ccrMo mo.ClusterComputeResource
 
 	ctx, cancel := context.WithTimeout(context.TODO(), defaultAPITimeout)
@@ -207,12 +214,14 @@ func findImportOvaParams(client *vim25.Client, datacenter, cluster, datastore, n
 		}
 
 		if foundDatastore && foundNetwork {
-			importOvaParams.Host = hostObj
-			resourcePool, err := hostObj.ResourcePool(ctx)
+			resourcePoolPath := fmt.Sprintf("/%s/host/%s/Resources/%s", datacenter, cluster, pool)
+			resourcePoolObj, err := finder.ResourcePool(ctx, resourcePoolPath)
+			// importOvaParams.Host = hostObj
+			// resourcePool, err := hostObj.ResourcePool(ctx)
 			if err != nil {
 				return nil, err
 			}
-			importOvaParams.ResourcePool = resourcePool
+			importOvaParams.ResourcePool = resourcePoolObj
 			return importOvaParams, nil
 		}
 	}
@@ -268,7 +277,8 @@ func resourceVSpherePrivateImportOvaCreate(d *schema.ResourceData, meta interfac
 		d.Get("cluster").(string),
 		d.Get("datastore").(string),
 		d.Get("network").(string),
-		d.Get("folder").(string))
+		d.Get("folder").(string),
+		d.Get("resource_pool").(string))
 	if err != nil {
 		return errors.Errorf("failed to find provided vSphere objects: %s", err)
 	}

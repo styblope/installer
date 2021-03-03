@@ -40,6 +40,14 @@ data "vsphere_virtual_machine" "template" {
   datacenter_id = data.vsphere_datacenter.datacenter.id
 }
 
+data "vsphere_resource_pool" "pool" {
+  # name accepts both a name or a full path
+  # using full path instead of just name because we use relative resource pool naming 'parent/child'
+  # name          = var.vsphere_resource_pool
+  name          =  join("/", ["", var.vsphere_datacenter, "host", var.vsphere_cluster, "Resources", var.vsphere_resource_pool])
+  datacenter_id = data.vsphere_datacenter.datacenter.id
+}
+
 resource "vsphereprivate_import_ova" "import" {
   name       = var.vsphere_template
   filename   = var.vsphere_ova_filepath
@@ -48,6 +56,7 @@ resource "vsphereprivate_import_ova" "import" {
   datastore  = var.vsphere_datastore
   network    = var.vsphere_network
   folder     = local.folder
+  resource_pool  = var.vsphere_resource_pool # name relative to cluster including child pools "parent/child"
   tag        = vsphere_tag.tag.id
 }
 
@@ -83,7 +92,7 @@ module "bootstrap" {
   source = "./bootstrap"
 
   ignition      = var.ignition_bootstrap
-  resource_pool = data.vsphere_compute_cluster.cluster.resource_pool_id
+  resource_pool = data.vsphere_resource_pool.pool.id
   datastore     = data.vsphere_datastore.datastore.id
   folder        = local.folder
   network       = data.vsphere_network.network.id
@@ -105,7 +114,7 @@ module "master" {
   instance_count = var.master_count
   ignition       = var.ignition_master
 
-  resource_pool = data.vsphere_compute_cluster.cluster.resource_pool_id
+  resource_pool = data.vsphere_resource_pool.pool.id
   datastore     = data.vsphere_datastore.datastore.id
   folder        = local.folder
   network       = data.vsphere_network.network.id

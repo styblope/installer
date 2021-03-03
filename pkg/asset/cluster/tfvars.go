@@ -527,6 +527,7 @@ func (t *TerraformVariables) Generate(parents asset.Parents) error {
 				Username:            installConfig.Config.VSphere.Username,
 				Password:            installConfig.Config.VSphere.Password,
 				Cluster:             installConfig.Config.VSphere.Cluster,
+				ResourcePool:        installConfig.Config.VSphere.ResourcePool,
 				ImageURL:            string(*rhcosImage),
 				PreexistingFolder:   preexistingFolder,
 			},
